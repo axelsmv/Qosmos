@@ -806,7 +806,10 @@ function getPhasorColor(col: number, row: number) {
   position: absolute;
   left: 0;
   top: 15px;
+<<<<<<< HEAD
   z-index: 10;
+=======
+>>>>>>> c8aebfc504226557aec1f5e77de218e48a1dc939
 }
 
 .btn-back {
