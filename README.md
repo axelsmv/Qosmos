@@ -31,6 +31,7 @@ Actualmente, el simulador cuenta con las siguientes capacidades lógicas, físic
    pip install fastapi uvicorn numpy
 
 2. Levantar el servidor de desarrollo de la API:
+   .\venv\Scripts\activate
    uvicorn main:app --reload
    (El servidor correrá por defecto en http://127.0.0.1:8000)
 
