@@ -348,6 +348,35 @@ const stepAnalogies = [
           </h3>
           <p class="analogy-text">{{ stepAnalogies[currentStep] }}</p>
         </div>
+
+        <!-- CARD DE ECUACIONES Y MATEMÁTICA DE GROVER -->
+        <div class="card math-explanation-card" style="border-left: 4px solid #38bdf8; background: rgba(56, 189, 248, 0.04); margin-top: 15px;">
+          <h3><span style="color: #38bdf8;">📊</span> Ecuaciones de Grover</h3>
+          <div class="math-content" style="font-size: 0.78rem; line-height: 1.45; color: #cbd5e1; display: grid; gap: 6px;">
+            <p style="margin: 4px 0 0 0;"><strong>1. Superposición Uniforme:</strong></p>
+            <div class="math-render">
+              |<i>s</i>⟩ = <i>H</i><sup>⊗3</sup>|000⟩ = 
+              <span class="math-frac" style="font-size: 0.85rem;">
+                <span class="math-num">1</span>
+                <span class="math-den">√8</span>
+              </span>
+              Σ |<i>x</i>⟩
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>2. Operador Oráculo (Fase):</strong></p>
+            <div class="math-render">
+              <i>U</i><sub><i>w</i></sub>|<i>x</i>⟩ = (-1)<sup><i>f</i>(<i>x</i>)</sup>|<i>x</i>⟩
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>3. Operador Difusor (Reflexión):</strong></p>
+            <div class="math-render">
+              <i>U</i><sub><i>s</i></sub> = 2|<i>s</i>⟩⟨<i>s</i>| - <i>I</i>
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Inversión sobre la media:</strong></p>
+            <div class="math-render">
+              <i>α</i><sub><i>x</i></sub>' = 2<i>μ</i> - <i>α</i><sub><i>x</i></sub>
+            </div>
+            <p style="margin: 4px 0; font-size: 0.72rem; color: #94a3b8;">Donde <i>μ</i> es la amplitud promedio de todos los estados. El oráculo invierte la fase del ganador, y al reflejar sobre la media <i>μ</i>, el ganador se amplifica y los demás disminuyen.</p>
+          </div>
+        </div>
       </aside>
 
       <!-- PANEL PRINCIPAL: GRILLA DE COFRES Y GRÁFICO DE AMPLITUDES -->
@@ -1050,5 +1079,48 @@ const stepAnalogies = [
   fill: #cbd5e1;
   font-size: 11px;
   text-anchor: middle;
+}
+
+/* Estilización premium para fórmulas matemáticas nativas */
+.math-render {
+  font-family: 'Cambria Math', 'Times New Roman', Times, serif;
+  font-size: 1.15rem;
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.math-render i {
+  font-style: italic;
+  padding: 0 1px;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0 4px;
+  font-size: 0.95rem;
+}
+
+.math-num {
+  border-bottom: 1px solid #34d399;
+  padding-bottom: 1px;
+  text-align: center;
+  width: 100%;
+}
+
+.math-den {
+  padding-top: 1px;
+  text-align: center;
+  width: 100%;
 }
 </style>

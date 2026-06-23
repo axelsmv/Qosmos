@@ -9,7 +9,7 @@ from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 from pydantic import BaseModel
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
-app = FastAPI(title="Qosmos Quantum Engine (4 Qubits)")
+app = FastAPI(title="Qosmos Quantum Engine (2 Qubits)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 1. DEFINICIÓN DEL MUNDO CUÁNTICO (4 Qubits) ---
+# --- 1. DEFINICIÓN DEL MUNDO CUÁNTICO (2 Qubits) ---
 ket_0 = np.array([[1], [0]], dtype=complex)
 ket_1 = np.array([[0], [1]], dtype=complex)
 
@@ -33,12 +33,12 @@ Y_gate = np.array([[0, -1j],
 Z_gate = np.array([[1, 0],
                    [0, -1]], dtype=complex)
 
-# El estado base para 4 qubits: |0000>
-estado_base_4q = np.kron(np.kron(np.kron(ket_0, ket_0), ket_0), ket_0)
-estado_actual = np.copy(estado_base_4q)
+# El estado base para 2 qubits: |00>
+estado_base_2q = np.kron(ket_0, ket_0)
+estado_actual = np.copy(estado_base_2q)
 
 # --- 2. LÓGICA FÍSICO-MATEMÁTICA ---
-def obtener_operador_un_qubit(gate_mat, target, N=4):
+def obtener_operador_un_qubit(gate_mat, target, N=2):
     I_op = np.identity(2, dtype=complex)
     op = 1
     for k in range(N):
@@ -46,7 +46,7 @@ def obtener_operador_un_qubit(gate_mat, target, N=4):
         op = np.kron(op, current) if not isinstance(op, int) else current
     return op
 
-def obtener_operador_cnot(control, target, N=4):
+def obtener_operador_cnot(control, target, N=2):
     P0 = np.array([[1, 0], [0, 0]], dtype=complex)
     P1 = np.array([[0, 0], [0, 1]], dtype=complex)
     I_op = np.identity(2, dtype=complex)
@@ -58,7 +58,7 @@ def obtener_operador_cnot(control, target, N=4):
         current = P0 if k == control else (I_op if k == target else I_op)
         term0 = np.kron(term0, current) if not isinstance(term0, int) else current
         
-    # Término 1: si el control es 1, el target aplica X (NOT)
+    # Término 1: si el control es 1, el target aplica X (CNOT)
     term1 = 1
     for k in range(N):
         current = P1 if k == control else (X_op if k == target else I_op)
@@ -66,7 +66,7 @@ def obtener_operador_cnot(control, target, N=4):
         
     return term0 + term1
 
-def calcular_bloch_qubit(estado, i, N=4):
+def calcular_bloch_qubit(estado, i, N=2):
     X_op = np.array([[0, 1], [1, 0]], dtype=complex)
     Y_op = np.array([[0, -1j], [1j, 0]], dtype=complex)
     Z_op = np.array([[1, 0], [0, -1]], dtype=complex)
@@ -98,15 +98,13 @@ def calcular_bloch_qubit(estado, i, N=4):
 
 def calcular_vectores_bloch(estado):
     return {
-        "q0": calcular_bloch_qubit(estado, 0, N=4),
-        "q1": calcular_bloch_qubit(estado, 1, N=4),
-        "q2": calcular_bloch_qubit(estado, 2, N=4),
-        "q3": calcular_bloch_qubit(estado, 3, N=4)
+        "q0": calcular_bloch_qubit(estado, 0, N=2),
+        "q1": calcular_bloch_qubit(estado, 1, N=2)
     }
 
 def vector_a_dirac(estado):
     terminos = []
-    for i in range(16):
+    for i in range(4):
         amp = estado[i][0]
         if np.abs(amp) > 0.001:
             real = round(amp.real, 3)
@@ -122,7 +120,7 @@ def vector_a_dirac(estado):
             else:
                 cadena = f"({real} + {imag}i)"
             
-            binary_state = f"{i:04b}"
+            binary_state = f"{i:02b}"
             terminos.append(f"{cadena}|{binary_state}⟩")
             
     ecuacion = " + ".join(terminos)
@@ -131,48 +129,48 @@ def vector_a_dirac(estado):
 # --- 3. ENDPOINTS DE LA API ---
 @app.get("/")
 def read_root():
-    return {"status": "Motor Cuántico Qosmos (4 Qubits) en línea"}
+    return {"status": "Motor Cuántico Qosmos (2 Qubits) en línea"}
 
 @app.get("/api/reset")
 def reset_qubit():
     global estado_actual
-    estado_actual = np.copy(estado_base_4q)
-    return {"status": "Sistema reiniciado a |0000>"}
+    estado_actual = np.copy(estado_base_2q)
+    return {"status": "Sistema reiniciado a |00>"}
 
 @app.get("/api/gate/{gate_name}")
 def apply_gate(gate_name: str, target: int = 0, control: int = 1):
     global estado_actual
     
-    if target < 0 or target >= 4 or control < 0 or control >= 4:
-        return {"error": "Índice de qubit fuera de rango (debe ser 0, 1, 2 o 3)"}
+    if target < 0 or target >= 2 or control < 0 or control >= 2:
+        return {"error": "Índice de qubit fuera de rango (debe ser 0 o 1)"}
         
     if gate_name == "CNOT" and control == target:
         return {"error": "El qubit de control y el qubit objetivo no pueden ser el mismo"}
 
     # Aplicar operador adecuado
     if gate_name == "H":
-        operacion = obtener_operador_un_qubit(H_gate, target, N=4)
+        operacion = obtener_operador_un_qubit(H_gate, target, N=2)
         estado_actual = np.dot(operacion, estado_actual)
     elif gate_name == "X":
-        operacion = obtener_operador_un_qubit(X_gate, target, N=4)
+        operacion = obtener_operador_un_qubit(X_gate, target, N=2)
         estado_actual = np.dot(operacion, estado_actual)
     elif gate_name == "Y":
-        operacion = obtener_operador_un_qubit(Y_gate, target, N=4)
+        operacion = obtener_operador_un_qubit(Y_gate, target, N=2)
         estado_actual = np.dot(operacion, estado_actual)
     elif gate_name == "Z":
-        operacion = obtener_operador_un_qubit(Z_gate, target, N=4)
+        operacion = obtener_operador_un_qubit(Z_gate, target, N=2)
         estado_actual = np.dot(operacion, estado_actual)
     elif gate_name == "CNOT":
-        operacion = obtener_operador_cnot(control, target, N=4)
+        operacion = obtener_operador_cnot(control, target, N=2)
         estado_actual = np.dot(operacion, estado_actual)
     else:
         return {"error": f"Compuerta {gate_name} no implementada"}
         
-    # Calcular probabilidades de los 16 estados posibles
+    # Calcular probabilidades de los 4 estados posibles
     probabilidades = {}
-    for i in range(16):
+    for i in range(4):
         prob = np.abs(estado_actual[i][0])**2 * 100
-        probabilidades[f"{i:04b}"] = round(prob, 2)
+        probabilidades[f"{i:02b}"] = round(prob, 2)
         
     bloch_data = calcular_vectores_bloch(estado_actual)
     
@@ -189,7 +187,7 @@ def measure_system():
     
     # 1. Calculamos las probabilidades actuales
     lista_probs = []
-    for i in range(16):
+    for i in range(4):
         lista_probs.append(np.abs(estado_actual[i][0])**2)
         
     lista_probs = np.array(lista_probs)
@@ -197,22 +195,22 @@ def measure_system():
     if sum_probs > 0:
         lista_probs = lista_probs / sum_probs
     else:
-        lista_probs = np.zeros(16)
+        lista_probs = np.zeros(4)
         lista_probs[0] = 1.0
         
     # 2. Simulamos el colapso usando los pesos cuánticos
-    estados_posibles = [f"{i:04b}" for i in range(16)]
+    estados_posibles = [f"{i:02b}" for i in range(4)]
     resultado = np.random.choice(estados_posibles, p=lista_probs)
     
     # 3. Forzamos el colapso irreversible en la memoria
-    estado_actual = np.zeros((16, 1), dtype=complex)
+    estado_actual = np.zeros((4, 1), dtype=complex)
     idx_colapso = int(resultado, 2)
     estado_actual[idx_colapso][0] = 1.0
     
     # Recalculamos probabilidades colapsadas (una al 100%, el resto 0%)
     probabilidades = {}
-    for i in range(16):
-        probabilidades[f"{i:04b}"] = 100.0 if i == idx_colapso else 0.0
+    for i in range(4):
+        probabilidades[f"{i:02b}"] = 100.0 if i == idx_colapso else 0.0
         
     bloch_data = calcular_vectores_bloch(estado_actual)
     
@@ -243,10 +241,10 @@ async def ejecutar_en_ibm(data: CircuitoData):
         
         # 2. Elegimos el procesador físico
         backend = service.least_busy(simulator=False, operational=True)
-        print(f"🚀 Ejecutando circuito en hardware real de 4 Qubits: {backend.name}...")
+        print(f"🚀 Ejecutando circuito en hardware real de 2 Qubits: {backend.name}...")
         
-        # 3. Construimos el circuito lógico de 4 qubits
-        qc = QuantumCircuit(4, 4)
+        # 3. Construimos el circuito lógico de 2 qubits
+        qc = QuantumCircuit(2, 2)
         
         for op in data.gate_history:
             if op.gate == 'H':
@@ -261,8 +259,8 @@ async def ejecutar_en_ibm(data: CircuitoData):
                 if op.control is not None:
                     qc.cx(op.control, op.target)
                 
-        # 4. Añadimos la medición en los 4 qubits
-        qc.measure([0, 1, 2, 3], [0, 1, 2, 3])
+        # 4. Añadimos la medición en los 2 qubits
+        qc.measure([0, 1], [0, 1])
         
         # 5. Compilamos el circuito para adaptarlo a la arquitectura física
         pm = generate_preset_pass_manager(backend=backend, optimization_level=1)

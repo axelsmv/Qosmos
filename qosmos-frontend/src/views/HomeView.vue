@@ -14,8 +14,8 @@ interface SimulationModule {
 const simulations = ref<SimulationModule[]>([
   {
     id: 'sim-4qubits',
-    name: 'Simulador de 4 Qubits',
-    description: 'Espacio de Hilbert C⁴. Modelación matemática pura, visualización 3D interactiva de la Esfera de Bloch, compuertas cuánticas y entrelazamiento cuántico mediante matrices de 4x4.',
+    name: 'Simulador de 2 Qubits',
+    description: 'Espacio de Hilbert ℂ⁴. Modelación matemática pura, visualización 3D interactiva de la Esfera de Bloch, compuertas cuánticas y entrelazamiento cuántico mediante matrices de 4x4.',
     route: '/simulador-4q',
     status: 'active',
     icon: '🔮',

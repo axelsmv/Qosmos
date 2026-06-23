@@ -5,6 +5,9 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 const isDoubleSlit = ref<boolean>(true)
 const wavelength = ref<number>(4.0) // longitud de onda (lambda)
 const slitDistance = ref<number>(4.0) // distancia d entre rendijas
+const hamiltonianSpeed = ref<number>(1.0) // velocidad de fase temporal del Hamiltoniano
+const slit1Count = ref<number>(0)
+const slit2Count = ref<number>(0)
 
 // Animación general de ondas
 const isPlaying = ref<boolean>(true)
@@ -59,8 +62,8 @@ function getWaveFunction(x: number, y: number, t: number) {
 
   // Distancia a la rendija 1
   const r1 = Math.sqrt(x * x + (y - s1Y_phys) * (y - s1Y_phys))
-  // Onda cilíndrica de la rendija 1
-  const phase1 = k * r1 - omega * t * animationSpeed.value
+  // Onda cilíndrica de la rendija 1, acelerada por el Hamiltoniano (energía del sistema)
+  const phase1 = k * r1 - omega * t * animationSpeed.value * hamiltonianSpeed.value
   
   // Difracción por rendija simple 1 (Envoltura sinc)
   const sinTheta1 = r1 > 0 ? (y - s1Y_phys) / r1 : 0
@@ -77,7 +80,7 @@ function getWaveFunction(x: number, y: number, t: number) {
   // Posición física de la rendija 2 (escalada por 0.8)
   const s2Y_phys = slit2Y.value * 0.8
   const r2 = Math.sqrt(x * x + (y - s2Y_phys) * (y - s2Y_phys))
-  const phase2 = k * r2 - omega * t * animationSpeed.value
+  const phase2 = k * r2 - omega * t * animationSpeed.value * hamiltonianSpeed.value
   
   // Difracción por rendija simple 2
   const sinTheta2 = r2 > 0 ? (y - s2Y_phys) / r2 : 0
@@ -213,6 +216,17 @@ function fireSingleElectron() {
   const targetY = (targetPercentage / 100) * gridRows
   const startY = isDoubleSlit.value ? (Math.random() > 0.5 ? slit1Y.value : slit2Y.value) : 6.0
 
+  // Registrar conteo en rendijas
+  if (isDoubleSlit.value) {
+    if (startY === slit1Y.value) {
+      slit1Count.value++
+    } else {
+      slit2Count.value++
+    }
+  } else {
+    slit1Count.value++
+  }
+
   // --- ACELERACIÓN DINÁMICA COMPLETA ---
   const progressRatio = totalFiredCount.value / maxFiredCount
   
@@ -246,6 +260,8 @@ function startFiring() {
     binCounts.value = new Array(50).fill(0)
     electrons.value = []
     currentInterval.value = initialInterval
+    slit1Count.value = 0
+    slit2Count.value = 0
   }
   isFiring.value = true
   fireSingleElectron()
@@ -264,6 +280,8 @@ function resetSimulation() {
   binCounts.value = new Array(50).fill(0)
   totalFiredCount.value = 0
   currentInterval.value = initialInterval
+  slit1Count.value = 0
+  slit2Count.value = 0
 }
 
 // Bucle de animación
@@ -306,16 +324,47 @@ const updateAnimation = () => {
       ctx.fillRect(0, 0, w, h)
 
       // 2. Dibujar rendijas físicas en la izquierda
-      ctx.fillStyle = '#0f172a'
-      ctx.fillRect(0, 0, 16, h)
-
-      ctx.fillStyle = '#38bdf8'
       const s1Y = isDoubleSlit.value ? slit1Y.value : 6.0
       const r1Y_px = (s1Y / gridRows) * (h - 30) + 15
-      ctx.clearRect(0, r1Y_px - 8, 16, 16)
+      const r2Y_px = (slit2Y.value / gridRows) * (h - 30) + 15
+
+      ctx.fillStyle = '#1e293b' // Barrera de color pizarra oscuro
+      
+      // Dibujamos los bloques de la barrera
       if (isDoubleSlit.value) {
-        const r2Y_px = (slit2Y.value / gridRows) * (h - 30) + 15
-        ctx.clearRect(0, r2Y_px - 8, 16, 16)
+        // Bloque superior
+        ctx.fillRect(0, 0, 16, r1Y_px - 8)
+        // Bloque del medio (divisor de rendijas)
+        ctx.fillRect(0, r1Y_px + 8, 16, r2Y_px - r1Y_px - 16)
+        // Bloque inferior
+        ctx.fillRect(0, r2Y_px + 8, 16, h - (r2Y_px + 8))
+
+        // Bordes brillantes de neón para destacar la división y la barrera
+        ctx.strokeStyle = '#38bdf8'
+        ctx.lineWidth = 1.5
+        ctx.strokeRect(0, 0, 16, r1Y_px - 8)
+        ctx.strokeRect(0, r1Y_px + 8, 16, r2Y_px - r1Y_px - 16)
+        ctx.strokeRect(0, r2Y_px + 8, 16, h - (r2Y_px + 8))
+
+        // Brillo interno semi-transparente en las aberturas (rendijas) para diferenciarlas mejor
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)'
+        ctx.fillRect(0, r1Y_px - 8, 16, 16)
+        ctx.fillRect(0, r2Y_px - 8, 16, 16)
+      } else {
+        // Bloque superior
+        ctx.fillRect(0, 0, 16, r1Y_px - 8)
+        // Bloque inferior
+        ctx.fillRect(0, r1Y_px + 8, 16, h - (r1Y_px + 8))
+
+        // Bordes brillantes
+        ctx.strokeStyle = '#38bdf8'
+        ctx.lineWidth = 1.5
+        ctx.strokeRect(0, 0, 16, r1Y_px - 8)
+        ctx.strokeRect(0, r1Y_px + 8, 16, h - (r1Y_px + 8))
+
+        // Brillo interno en la abertura
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)'
+        ctx.fillRect(0, r1Y_px - 8, 16, 16)
       }
 
       // 3. PANTALLA DETECTORA DE IMPACTOS (Eje derecho, X = 670)
@@ -347,10 +396,10 @@ const updateAnimation = () => {
       }
 
       // 5. CURVA LÍMITE TEÓRICA DE LA FUNCIÓN DE ONDA |psi|^2
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.85)' // verde esmeralda brillante
-      ctx.lineWidth = 2.5
+      ctx.strokeStyle = '#10b981' // verde esmeralda brillante sólido
+      ctx.lineWidth = 3.5 // Más grueso
       ctx.shadowColor = '#10b981'
-      ctx.shadowBlur = 6
+      ctx.shadowBlur = 12 // Más brillo
       ctx.beginPath()
       const samples = 150
       for (let i = 0; i < samples; i++) {
@@ -365,6 +414,25 @@ const updateAnimation = () => {
       }
       ctx.stroke()
       ctx.shadowBlur = 0 // reiniciar sombras
+
+      // DIBUJAR LEYENDAS Y CONTADORES EN LA FUNCIÓN DE ONDA (CANVAS)
+      ctx.font = 'bold 10px monospace'
+      ctx.textAlign = 'right'
+      ctx.fillStyle = '#10b981'
+      ctx.fillText('Función de Onda Teórica |ψ|²', w - 15, 20)
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.9)'
+      ctx.fillText('Frecuencia de Impactos', w - 15, 35)
+
+      // DIBUJAR CONTADORES EN LAS RENDIJAS FÍSICAS (CANVAS)
+      ctx.font = 'bold 11px monospace'
+      ctx.fillStyle = '#38bdf8'
+      ctx.textAlign = 'left'
+      if (isDoubleSlit.value) {
+        ctx.fillText(`R1: ${slit1Count.value} e-`, 20, r1Y_px - 14)
+        ctx.fillText(`R2: ${slit2Count.value} e-`, 20, r2Y_px + 22)
+      } else {
+        ctx.fillText(`Rendija: ${slit1Count.value} e-`, 20, r1Y_px - 14)
+      }
 
       // 6. ACTUALIZAR Y DIBUJAR LOS ELECTRONES CON MINI-FASOR
       electrons.value = electrons.value.filter(el => {
@@ -540,7 +608,7 @@ function getPhasorColor(col: number, row: number) {
 
           <div class="control-group">
             <div class="slider-header">
-              <label>Longitud de Onda ($\lambda$)</label>
+              <label>Longitud de Onda (λ)</label>
               <span class="value-readout">{{ wavelength.toFixed(1) }} nm</span>
             </div>
             <input 
@@ -555,7 +623,7 @@ function getPhasorColor(col: number, row: number) {
 
           <div class="control-group" v-if="isDoubleSlit">
             <div class="slider-header">
-              <label>Separación de Rendijas ($d$)</label>
+              <label>Separación de Rendijas (d)</label>
               <span class="value-readout">{{ slitDistance.toFixed(1) }} nm</span>
             </div>
             <input 
@@ -570,7 +638,7 @@ function getPhasorColor(col: number, row: number) {
           </div>
 
           <div class="control-group">
-            <label>Tiempo de la Onda</label>
+            <label>Tiempo de la Onda (Animación)</label>
             <div class="speed-controls">
               <button @click="isPlaying = !isPlaying" class="btn-play">
                 {{ isPlaying ? '⏸ Pausar' : '▶ Reproducir' }}
@@ -585,6 +653,22 @@ function getPhasorColor(col: number, row: number) {
               />
             </div>
           </div>
+
+          <div class="control-group">
+            <div class="slider-header">
+              <label>Acelerador Hamiltoniano (Evolución temporal Ĥ)</label>
+              <span class="value-readout">{{ hamiltonianSpeed.toFixed(1) }}x</span>
+            </div>
+            <input 
+              v-model.number="hamiltonianSpeed" 
+              type="range" 
+              min="0.5" 
+              max="4.0" 
+              step="0.1" 
+              class="slider"
+            />
+            <span class="slider-info">Incrementa la velocidad de fase cuántica gobernada por el Operador Hamiltoniano del sistema.</span>
+          </div>
         </div>
 
         <!-- EXPLICACIÓN NO TÉCNICA DINÁMICA -->
@@ -595,15 +679,43 @@ function getPhasorColor(col: number, row: number) {
 
         <!-- CARD DE ECUACIONES EN TIEMPO REAL -->
         <div class="card math-card">
-          <h3>Cálculos (Motor Cuántico)</h3>
+          <h3>Cálculos y Ecuaciones Físicas</h3>
           <div class="math-content">
             <div class="formula-block">
-              <span class="formula-label">Función de Onda:</span>
-              <div class="formula-tex">ψ(x,y,t) = ψ₁ + ψ₂</div>
+              <span class="formula-label">Ecuación de Schrödinger:</span>
+              <div class="math-render">
+                <i>i</i><i>ℏ</i>
+                <span class="math-frac">
+                  <span class="math-num">∂<i>ψ</i></span>
+                  <span class="math-den">∂<i>t</i></span>
+                </span>
+                = <i>Ĥ</i><i>ψ</i>
+              </div>
+              <span class="slider-info" style="margin-top: 3px;">La función de onda evoluciona a través del operador Hamiltoniano Ĥ.</span>
+            </div>
+            <div class="formula-block">
+              <span class="formula-label">Evolución de Fase Temporal:</span>
+              <div class="math-render">
+                <i>ψ</i>(<i>t</i>) = <i>e</i><sup>-<i>i</i><i>Ĥ</i><i>t</i>/<i>ℏ</i></sup><i>ψ</i>(0)
+              </div>
+              <span class="slider-info" style="margin-top: 3px;">La velocidad de rotación angular es ω = E/ℏ, modificada por el Acelerador Hamiltoniano.</span>
+            </div>
+            <div class="formula-block">
+              <span class="formula-label">Superposición Cuántica:</span>
+              <div class="math-render">
+                <i>ψ</i>(<i>x</i>, <i>y</i>, <i>t</i>) = <i>ψ</i><sub>1</sub> + <i>ψ</i><sub>2</sub>
+              </div>
             </div>
             <div class="formula-block">
               <span class="formula-label">Componente Cilíndrica:</span>
-              <div class="formula-tex">ψⱼ = A/√(rⱼ) · e^(i(krⱼ - ωt)) · sinc(θⱼ)</div>
+              <div class="math-render">
+                <i>ψ</i><sub><i>j</i></sub> = 
+                <span class="math-frac">
+                  <span class="math-num"><i>A</i></span>
+                  <span class="math-den">√<i>r</i><sub><i>j</i></sub></span>
+                </span>
+                · <i>e</i><sup><i>i</i>(<i>k</i><i>r</i><sub><i>j</i></sub> - <i>ω</i><i>t</i>)</sup> · sinc(<i>θ</i><sub><i>j</i></sub>)
+              </div>
             </div>
             <div class="formula-params">
               <div class="param-row">
@@ -806,10 +918,7 @@ function getPhasorColor(col: number, row: number) {
   position: absolute;
   left: 0;
   top: 15px;
-<<<<<<< HEAD
   z-index: 10;
-=======
->>>>>>> c8aebfc504226557aec1f5e77de218e48a1dc939
 }
 
 .btn-back {
@@ -1363,5 +1472,48 @@ function getPhasorColor(col: number, row: number) {
 .param-value {
   color: #38bdf8;
   font-weight: bold;
+}
+
+/* Estilización premium para fórmulas matemáticas nativas */
+.math-render {
+  font-family: 'Cambria Math', 'Times New Roman', Times, serif;
+  font-size: 1.15rem;
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.math-render i {
+  font-style: italic;
+  padding: 0 1px;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0 4px;
+  font-size: 0.95rem;
+}
+
+.math-num {
+  border-bottom: 1px solid #34d399;
+  padding-bottom: 1px;
+  text-align: center;
+  width: 100%;
+}
+
+.math-den {
+  padding-top: 1px;
+  text-align: center;
+  width: 100%;
 }
 </style>

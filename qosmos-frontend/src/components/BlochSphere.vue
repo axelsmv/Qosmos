@@ -7,14 +7,10 @@ const quantumStore = useQuantumStore()
 
 const container0 = ref<HTMLElement | null>(null)
 const container1 = ref<HTMLElement | null>(null)
-const container2 = ref<HTMLElement | null>(null)
-const container3 = ref<HTMLElement | null>(null)
 
 // Renderers para cada esfera
 let renderer0: BlochSphereRenderer | null = null
 let renderer1: BlochSphereRenderer | null = null
-let renderer2: BlochSphereRenderer | null = null
-let renderer3: BlochSphereRenderer | null = null
 
 // Clase para manejar de forma modular el canvas 3D de cada esfera de Bloch
 class BlochSphereRenderer {
@@ -191,14 +187,12 @@ const getStatusClass = (purity: number) => {
   return 'status-mixed'
 }
 
-// Relación de cambios en los 4 qubits
+// Relación de cambios en los 2 qubits
 watch(
-  () => [quantumStore.qubit0, quantumStore.qubit1, quantumStore.qubit2, quantumStore.qubit3] as const,
-  ([newQ0, newQ1, newQ2, newQ3]) => {
+  () => [quantumStore.qubit0, quantumStore.qubit1] as const,
+  ([newQ0, newQ1]) => {
     if (renderer0) renderer0.updateVector(newQ0.x, newQ0.y, newQ0.z)
     if (renderer1) renderer1.updateVector(newQ1.x, newQ1.y, newQ1.z)
-    if (renderer2) renderer2.updateVector(newQ2.x, newQ2.y, newQ2.z)
-    if (renderer3) renderer3.updateVector(newQ3.x, newQ3.y, newQ3.z)
   },
   { deep: true }
 )
@@ -206,8 +200,6 @@ watch(
 const handleResize = () => {
   if (renderer0) renderer0.resize()
   if (renderer1) renderer1.resize()
-  if (renderer2) renderer2.resize()
-  if (renderer3) renderer3.resize()
 }
 
 let resizeObserver: ResizeObserver
@@ -223,14 +215,6 @@ onMounted(async () => {
     renderer1 = new BlochSphereRenderer(container1.value, 0x06b6d4) // Q1 Celeste
     renderer1.updateVector(quantumStore.qubit1.x, quantumStore.qubit1.y, quantumStore.qubit1.z)
   }
-  if (container2.value) {
-    renderer2 = new BlochSphereRenderer(container2.value, 0x10b981) // Q2 Verde Esmeralda
-    renderer2.updateVector(quantumStore.qubit2.x, quantumStore.qubit2.y, quantumStore.qubit2.z)
-  }
-  if (container3.value) {
-    renderer3 = new BlochSphereRenderer(container3.value, 0xeab308) // Q3 Amarillo Ámbar
-    renderer3.updateVector(quantumStore.qubit3.x, quantumStore.qubit3.y, quantumStore.qubit3.z)
-  }
 
   resizeObserver = new ResizeObserver(() => {
     handleResize()
@@ -238,23 +222,19 @@ onMounted(async () => {
 
   if (container0.value) resizeObserver.observe(container0.value)
   if (container1.value) resizeObserver.observe(container1.value)
-  if (container2.value) resizeObserver.observe(container2.value)
-  if (container3.value) resizeObserver.observe(container3.value)
 })
 
 onBeforeUnmount(() => {
   if (resizeObserver) resizeObserver.disconnect()
   if (renderer0) renderer0.destroy()
   if (renderer1) renderer1.destroy()
-  if (renderer2) renderer2.destroy()
-  if (renderer3) renderer3.destroy()
 })
 </script>
 
 <template>
   <div class="bloch-component-wrapper">
     <div class="bloch-component-header">
-      <span class="hilbert-badge">Espacio de Hilbert: ℂ¹⁶ (4 Qubits)</span>
+      <span class="hilbert-badge">Espacio de Hilbert: ℂ⁴ (2 Qubits)</span>
     </div>
     
     <div class="bloch-spheres-wrapper">
@@ -303,50 +283,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Esfera Qubit 2 -->
-      <div class="qubit-visual-card">
-        <div class="qubit-title-row">
-          <span class="qubit-badge badge-q2">Q2</span>
-          <span class="qubit-title-text">Qubit 2</span>
-        </div>
-        <div ref="container2" class="canvas-container"></div>
-        <div class="qubit-stats">
-          <div class="stats-row">
-            <span>Vector:</span>
-            <span class="math-font">[{{ formatCoord(quantumStore.qubit2.x) }}, {{ formatCoord(quantumStore.qubit2.y) }}, {{ formatCoord(quantumStore.qubit2.z) }}]</span>
-          </div>
-          <div class="stats-row">
-            <span>Coherencia:</span>
-            <span class="math-font">{{ formatPurity(quantumStore.qubit2.purity) }}</span>
-          </div>
-          <div :class="['status-badge', getStatusClass(quantumStore.qubit2.purity)]">
-            {{ getStatusLabel(quantumStore.qubit2.purity) }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Esfera Qubit 3 -->
-      <div class="qubit-visual-card">
-        <div class="qubit-title-row">
-          <span class="qubit-badge badge-q3">Q3</span>
-          <span class="qubit-title-text">Qubit 3</span>
-        </div>
-        <div ref="container3" class="canvas-container"></div>
-        <div class="qubit-stats">
-          <div class="stats-row">
-            <span>Vector:</span>
-            <span class="math-font">[{{ formatCoord(quantumStore.qubit3.x) }}, {{ formatCoord(quantumStore.qubit3.y) }}, {{ formatCoord(quantumStore.qubit3.z) }}]</span>
-          </div>
-          <div class="stats-row">
-            <span>Coherencia:</span>
-            <span class="math-font">{{ formatPurity(quantumStore.qubit3.purity) }}</span>
-          </div>
-          <div :class="['status-badge', getStatusClass(quantumStore.qubit3.purity)]">
-            {{ getStatusLabel(quantumStore.qubit3.purity) }}
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Guía didáctica interactiva -->
@@ -357,7 +293,7 @@ onBeforeUnmount(() => {
           <strong>🟢 Polo Norte (|0⟩) / 🔴 Polo Sur (|1⟩):</strong> Estados clásicos de base puros.
         </div>
         <div class="guide-item">
-          <strong>🌐 Ecuador:</strong> Estado de **Superposición** pura (las probabilidades clásica de colapsar son 50% / 50%).
+          <strong>🌐 Ecuador:</strong> Estado de **Superposición** pura (las probabilidades clásicas de colapsar son 50% / 50%).
         </div>
         <div class="guide-item">
           <strong>⚛️ Flecha que Desaparece:</strong> Cuando aplicas **CNOT**, los qubits se entrelazan y pierden su coherencia individual (su estado no se puede representar de forma aislada). La pureza/coherencia baja y la flecha se encoge al centro.
@@ -419,8 +355,6 @@ onBeforeUnmount(() => {
 
 .badge-q0 { background-color: #a855f7; }
 .badge-q1 { background-color: #06b6d4; }
-.badge-q2 { background-color: #10b981; }
-.badge-q3 { background-color: #eab308; }
 
 .qubit-title-text {
   font-size: 0.85rem;

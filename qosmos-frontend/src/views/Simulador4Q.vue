@@ -129,7 +129,7 @@ const tutorialInstruction = computed(() => {
       return 'Paso 2: ¡Excelente! Q0 está ahora en superposición (mira cómo la aguja de la esfera púrpura está acostada en el ecuador, como una moneda girando). Haz clic en "⚡ Medir Sistema" para abrir la caja y observar el resultado.'
     }
     if (currentStep.value === 2) {
-      return 'Experimento Completado: La observación forzó al sistema a colapsar a una sola realidad clásica (vivo |0000⟩ o muerto |0001⟩). Haz clic en "🔄 Reiniciar Registros" para comenzar otro.'
+      return 'Experimento Completado: La observación forzó al sistema a colapsar a una sola realidad clásica (vivo |00⟩ o muerto |01⟩). Haz clic en "🔄 Reiniciar Registros" para comenzar otro.'
     }
   }
   
@@ -205,22 +205,22 @@ const translatedDirac = computed(() => {
     return 'La superposición se ha roto de forma irreversible. La medición obligó al sistema a colapsar a una sola realidad clásica determinada.'
   }
   
-  if (notation === '|0000|' || notation === '|0000⟩') {
-    return 'El simulador está en reposo absoluto. Los 4 qubits tienen un valor físico de cero.'
+  if (notation === '|00|' || notation === '|00⟩') {
+    return 'El simulador está en reposo absoluto. Los 2 qubits tienen un valor físico de cero.'
   }
   
   const history = quantumStore.gateHistory
   const hasEntanglement = history.some(op => op.gate === 'CNOT')
   
   if (hasEntanglement && notation.includes('+')) {
-    return '¡Entrelazamiento cuántico activo! Dos o más qubits se han convertido en gemelos correlacionados. Su estado individual se difuminó y sus destinos ahora están atados.'
+    return '¡Entrelazamiento cuántico activo! Ambos qubits se han convertido en gemelos correlacionados. Su estado individual se difuminó y sus destinos ahora están atados.'
   }
   
   if (notation.includes('+') || notation.includes('-')) {
     return 'Superposición cuántica activa. Los qubits están en múltiples realidades paralelas al mismo tiempo. Es el equivalente a monedas girando rápido en el aire.'
   }
   
-  if (notation === '|1000⟩') {
+  if (notation === '|10⟩') {
     return 'Q0 (Púrpura) cambió a valor clásico 1. Es como pulsar un interruptor de luz en encendido.'
   }
   
@@ -306,7 +306,7 @@ const ejecutarEnIBM = async () => {
         <router-link to="/" class="btn-back">← Volver al Menú</router-link>
       </div>
       <h1>Qosmos</h1>
-      <p>Simulador Cuántico Multiqubit • Panel de Laboratorio Físico</p>
+      <p>Simulador Cuántico Multiqubit • Panel de Laboratorio Físico (2 Qubits)</p>
     </header>
 
     <div class="dashboard-container">
@@ -357,8 +357,6 @@ const ejecutarEnIBM = async () => {
                       :class="{ 'highlight-pulse': isButtonHighlighted('target-select') }">
                 <option :value="0">Q0 (Púrpura)</option>
                 <option :value="1">Q1 (Celeste)</option>
-                <option :value="2">Q2 (Verde)</option>
-                <option :value="3">Q3 (Amarillo)</option>
               </select>
             </div>
             
@@ -380,8 +378,6 @@ const ejecutarEnIBM = async () => {
                 <select v-model="selectedControl" class="qosmos-select select-mini" :class="{ 'highlight-pulse': isButtonHighlighted('cnot-select') }">
                   <option :value="0">Q0</option>
                   <option :value="1">Q1</option>
-                  <option :value="2">Q2</option>
-                  <option :value="3">Q3</option>
                 </select>
               </div>
               <div class="select-group">
@@ -389,8 +385,6 @@ const ejecutarEnIBM = async () => {
                 <select v-model="selectedTargetCnot" class="qosmos-select select-mini" :class="{ 'highlight-pulse': isButtonHighlighted('cnot-select') }">
                   <option :value="0">Q0</option>
                   <option :value="1">Q1</option>
-                  <option :value="2">Q2</option>
-                  <option :value="3">Q3</option>
                 </select>
               </div>
             </div>
@@ -466,6 +460,33 @@ const ejecutarEnIBM = async () => {
             <p class="analog-text">{{ translatedDirac }}</p>
           </div>
         </div>
+
+        <!-- PANEL DE ECUACIONES Y NORMALIZACIÓN -->
+        <div class="card math-card" style="margin-top: 15px; border-left: 4px solid #38bdf8; background: rgba(56, 189, 248, 0.04);">
+          <h3><span style="color: #38bdf8;">📊</span> Ecuaciones y Normalización del Registro</h3>
+          <div class="math-formulas-box" style="font-size: 0.8rem; line-height: 1.45; color: #cbd5e1; display: grid; gap: 8px;">
+            <p style="margin: 4px 0 0 0;"><strong>Estado cuántico de 2 qubits (Espacio de Hilbert ℂ⁴):</strong></p>
+            <div class="math-render">
+              |<i>ψ</i>⟩ = <i>c</i><sub>00</sub>|00⟩ + <i>c</i><sub>01</sub>|01⟩ + <i>c</i><sub>10</sub>|10⟩ + <i>c</i><sub>11</sub>|11⟩
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Condición de Normalización (Probabilidad total = 1):</strong></p>
+            <div class="math-render">
+              Σ |<i>c</i><sub><i>ij</i></sub>|² = |<i>c</i><sub>00</sub>|² + |<i>c</i><sub>01</sub>|² + |<i>c</i><sub>10</sub>|² + |<i>c</i><sub>11</sub>|² = 1
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Compuertas aplicadas en este simulador:</strong></p>
+            <ul style="margin: 3px 0; padding-left: 20px;">
+              <li><strong>Hadamard (Superposición):</strong> <i>H</i> = 
+                <span class="math-frac" style="font-size: 0.85rem;">
+                  <span class="math-num">1</span>
+                  <span class="math-den">√2</span>
+                </span>
+                [[1, 1], [1, -1]]
+              </li>
+              <li><strong>Pauli-X (Negación cuántica):</strong> <i>X</i> = [[0, 1], [1, 0]]</li>
+              <li><strong>CNOT (Entrelazamiento):</strong> Invierte el qubit objetivo si el control es |1⟩.</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <!-- Partitura de Circuito Completo (Fila Inferior) -->
@@ -481,7 +502,7 @@ const ejecutarEnIBM = async () => {
             <div v-else class="composer-timeline-board">
               <!-- Columna izquierda fija para los nombres de las líneas -->
               <div class="composer-labels-column">
-                <div v-for="q in [0, 1, 2, 3]" :key="q" class="composer-label-cell">
+                <div v-for="q in [0, 1]" :key="q" class="composer-label-cell">
                   |q{{ q }}⟩
                 </div>
               </div>
@@ -494,7 +515,7 @@ const ejecutarEnIBM = async () => {
                   <div v-if="op.gate === 'CNOT'" class="cnot-vertical-line" :style="getCnotLineStyleLocal(op.control, op.target)"></div>
                   
                   <!-- Celdas para cada qubit en la columna -->
-                  <div v-for="q in [0, 1, 2, 3]" :key="q" class="composer-gate-cell">
+                  <div v-for="q in [0, 1]" :key="q" class="composer-gate-cell">
                     <!-- Segmento de línea horizontal de fondo -->
                     <div class="wire-segment-line"></div>
                     
@@ -1020,7 +1041,7 @@ body, .qosmos-container {
   background-color: #080d16;
   padding: 15px;
   border-radius: 12px;
-  min-height: 200px;
+  min-height: 120px;
   border: 1px solid #1e293b;
   display: flex;
   align-items: center;
@@ -1171,4 +1192,47 @@ body, .qosmos-container {
 .circuit-composer-container::-webkit-scrollbar-track { background: #080d16; border-radius: 4px; }
 .circuit-composer-container::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
 .circuit-composer-container::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+
+/* Estilización premium para fórmulas matemáticas nativas */
+.math-render {
+  font-family: 'Cambria Math', 'Times New Roman', Times, serif;
+  font-size: 1.15rem;
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.math-render i {
+  font-style: italic;
+  padding: 0 1px;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0 4px;
+  font-size: 0.95rem;
+}
+
+.math-num {
+  border-bottom: 1px solid #34d399;
+  padding-bottom: 1px;
+  text-align: center;
+  width: 100%;
+}
+
+.math-den {
+  padding-top: 1px;
+  text-align: center;
+  width: 100%;
+}
 </style>

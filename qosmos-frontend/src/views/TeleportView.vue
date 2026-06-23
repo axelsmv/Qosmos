@@ -702,6 +702,30 @@ const bobDiracText = computed(() => {
           </h3>
           <p class="analogy-text">{{ stepAnalogies[currentStep] }}</p>
         </div>
+
+        <!-- CARD DE MATEMÁTICA Y NORMALIZACIÓN -->
+        <div class="card math-explanation-card" style="border-left: 4px solid #38bdf8; background: rgba(56, 189, 248, 0.04); margin-top: 15px;">
+          <h3><span style="color: #38bdf8;">📊</span> Ecuaciones y Normalización</h3>
+          <div class="math-content" style="font-size: 0.78rem; line-height: 1.45; color: #cbd5e1; display: grid; gap: 6px;">
+            <p style="margin: 4px 0 0 0;"><strong>Estado de Alice:</strong></p>
+            <div class="math-render">
+              |<i>ψ</i>⟩ = <i>α</i>|0⟩ + <i>β</i>|1⟩
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Amplitudes / Deslizamiento:</strong></p>
+            <div class="math-render">
+              <i>α</i> = cos(<i>θ</i>/2), &nbsp; <i>β</i> = <i>e</i><sup><i>i</i><i>φ</i></sup> sin(<i>θ</i>/2)
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Condición de Normalización (Probabilidad = 1):</strong></p>
+            <div class="math-render">
+              |<i>α</i>|² + |<i>β</i>|² = cos²(<i>θ</i>/2) + sin²(<i>θ</i>/2) = 1
+            </div>
+            <p style="margin: 4px 0 0 0;"><strong>Variación del Estado:</strong></p>
+            <ul style="margin: 3px 0; padding-left: 18px;">
+              <li>El ángulo <strong>θ (0° a 180°)</strong> regula el peso (probabilidad) de colapsar a |0⟩ o |1⟩.</li>
+              <li>El ángulo <strong>φ (0° a 360°)</strong> define la fase cuántica (longitud en la esfera de Bloch).</li>
+            </ul>
+          </div>
+        </div>
       </aside>
 
       <!-- PANEL PRINCIPAL: ESFERAS DE BLOCH Y CIRCUITO -->
@@ -897,6 +921,96 @@ const bobDiracText = computed(() => {
               <div class="state-math-box" :class="currentStep === 4 ? 'emerald-border animate-glow' : 'gray-border'">
                 <span class="font-mono">{{ bobDiracText }}</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD DE PASOS MATEMÁTICOS DETALLADOS -->
+        <div class="card math-steps-card" style="border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.03); margin-top: 15px;">
+          <h3><span style="color: #10b981;">📝</span> Ecuaciones de la Teletransportación Cuántica paso a paso</h3>
+          <div class="steps-math-box" style="font-size: 0.8rem; line-height: 1.5; color: #cbd5e1; display: grid; gap: 12px;">
+            <div>
+              <strong style="color: #10b981;">Paso 0: Preparación de Alice</strong>
+              <div class="math-render">
+                |<i>Ψ</i><sub>0</sub>⟩ = |<i>ψ</i>⟩<sub>0</sub> ⊗ |00⟩<sub>12</sub> = (<i>α</i>|0⟩ + <i>β</i>|1⟩) ⊗ |00⟩
+              </div>
+            </div>
+            <div>
+              <strong style="color: #10b981;">Paso 1: Par de Bell Entrelazado (q₁ y q₂)</strong>
+              <div class="math-render" style="margin-bottom: 3px;">
+                |<i>Φ</i><sup>+</sup>⟩ = 
+                <span class="math-frac" style="font-size: 0.85rem;">
+                  <span class="math-num">1</span>
+                  <span class="math-den">√2</span>
+                </span>
+                (|00⟩ + |11⟩)
+              </div>
+              <div class="math-render">
+                |<i>Ψ</i><sub>1</sub>⟩ = 
+                <span class="math-frac" style="font-size: 0.85rem;">
+                  <span class="math-num">1</span>
+                  <span class="math-den">√2</span>
+                </span>
+                [ <i>α</i>|0⟩(|00⟩ + |11⟩) + <i>β</i>|1⟩(|00⟩ + |11⟩) ]
+              </div>
+            </div>
+            <div>
+              <strong style="color: #10b981;">Paso 2: Acoplamiento de Bell (Compuertas CNOT y H de Alice)</strong>
+              <div class="math-render" style="margin-bottom: 3px;">
+                CNOT<sub>01</sub>: &nbsp;
+                <span class="math-frac" style="font-size: 0.85rem;">
+                  <span class="math-num">1</span>
+                  <span class="math-den">√2</span>
+                </span>
+                [ <i>α</i>|0⟩(|00⟩ + |11⟩) + <i>β</i>|1⟩(|10⟩ + |01⟩) ]
+              </div>
+              <div class="math-render">
+                <i>H</i><sub>0</sub>: &nbsp;
+                <span class="math-frac" style="font-size: 0.85rem;">
+                  <span class="math-num">1</span>
+                  <span class="math-den">2</span>
+                </span>
+                [ |00⟩(<i>α</i>|0⟩ + <i>β</i>|1⟩) + |01⟩(<i>α</i>|1⟩ + <i>β</i>|0⟩) + |10⟩(<i>α</i>|0⟩ - <i>β</i>|1⟩) + |11⟩(<i>α</i>|1⟩ - <i>β</i>|0⟩) ]
+              </div>
+            </div>
+            <div>
+              <strong style="color: #10b981;">Paso 3 y 4: Medición local y Corrección en Bob (q₂)</strong>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.76rem;">
+                <thead>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                    <th style="padding: 4px;">Medición Alice (c₁c₀)</th>
+                    <th style="padding: 4px;">Estado Colapsado q₂</th>
+                    <th style="padding: 4px;">Operación de Bob</th>
+                    <th style="padding: 4px;">Estado Final en Bob</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 4px; font-family: monospace; color: #38bdf8;">00</td>
+                    <td style="padding: 4px; font-family: monospace; font-style: italic;">α|0⟩ + β|1⟩</td>
+                    <td style="padding: 4px; font-family: monospace; color: #fbbf24;">I (Identidad)</td>
+                    <td style="padding: 4px; font-family: monospace; color: #34d399; font-style: italic;">α|0⟩ + β|1⟩</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 4px; font-family: monospace; color: #38bdf8;">01</td>
+                    <td style="padding: 4px; font-family: monospace; font-style: italic;">α|1⟩ + β|0⟩</td>
+                    <td style="padding: 4px; font-family: monospace; color: #fbbf24;">X (NOT)</td>
+                    <td style="padding: 4px; font-family: monospace; color: #34d399; font-style: italic;">α|0⟩ + β|1⟩</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 4px; font-family: monospace; color: #38bdf8;">10</td>
+                    <td style="padding: 4px; font-family: monospace; font-style: italic;">α|0⟩ - β|1⟩</td>
+                    <td style="padding: 4px; font-family: monospace; color: #fbbf24;">Z (Fase)</td>
+                    <td style="padding: 4px; font-family: monospace; color: #34d399; font-style: italic;">α|0⟩ + β|1⟩</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px; font-family: monospace; color: #38bdf8;">11</td>
+                    <td style="padding: 4px; font-family: monospace; font-style: italic;">α|1⟩ - β|0⟩</td>
+                    <td style="padding: 4px; font-family: monospace; color: #fbbf24;">X &amp; Z</td>
+                    <td style="padding: 4px; font-family: monospace; color: #34d399; font-style: italic;">α|0⟩ + β|1⟩</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1799,5 +1913,48 @@ const bobDiracText = computed(() => {
 
 .animate-glow {
   animation: glow-pulse-green 1.5s infinite alternate;
+}
+
+/* Estilización premium para fórmulas matemáticas nativas */
+.math-render {
+  font-family: 'Cambria Math', 'Times New Roman', Times, serif;
+  font-size: 1.15rem;
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #030712;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.03);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.math-render i {
+  font-style: italic;
+  padding: 0 1px;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  padding: 0 4px;
+  font-size: 0.95rem;
+}
+
+.math-num {
+  border-bottom: 1px solid #34d399;
+  padding-bottom: 1px;
+  text-align: center;
+  width: 100%;
+}
+
+.math-den {
+  padding-top: 1px;
+  text-align: center;
+  width: 100%;
 }
 </style>

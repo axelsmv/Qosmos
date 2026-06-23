@@ -21,8 +21,8 @@ export interface StateProbability {
 
 const generateInitialProbabilities = (): StateProbability[] => {
   const list: StateProbability[] = []
-  for (let i = 0; i < 16; i++) {
-    const label = i.toString(2).padStart(4, '0')
+  for (let i = 0; i < 4; i++) {
+    const label = i.toString(2).padStart(2, '0')
     list.push({ label, prob: i === 0 ? 100 : 0 })
   }
   return list
@@ -31,16 +31,14 @@ const generateInitialProbabilities = (): StateProbability[] => {
 export const useQuantumStore = defineStore('quantum', () => {
   const isMeasured = ref<boolean>(false)
   
-  // Tabla de probabilidades (16 estados posibles)
+  // Tabla de probabilidades (4 estados posibles para 2 qubits)
   const probabilities = ref<StateProbability[]>(generateInitialProbabilities())
   
-  // Vectores de Bloch para los 4 Qubits
+  // Vectores de Bloch para los 2 Qubits
   const qubit0 = ref<BlochVector>({ x: 0, y: 0, z: 1, purity: 1 })
   const qubit1 = ref<BlochVector>({ x: 0, y: 0, z: 1, purity: 1 })
-  const qubit2 = ref<BlochVector>({ x: 0, y: 0, z: 1, purity: 1 })
-  const qubit3 = ref<BlochVector>({ x: 0, y: 0, z: 1, purity: 1 })
   
-  const diracNotation = ref<string>('|0000⟩')
+  const diracNotation = ref<string>('|00⟩')
   const gateHistory = ref<Operation[]>([])
 
   async function applyGate(gateName: string, target: number = 0, control: number = 1) {
@@ -70,8 +68,6 @@ export const useQuantumStore = defineStore('quantum', () => {
       
       qubit0.value = data.bloch.q0
       qubit1.value = data.bloch.q1
-      qubit2.value = data.bloch.q2
-      qubit3.value = data.bloch.q3
       diracNotation.value = data.dirac
       
     } catch (error) {
@@ -88,10 +84,8 @@ export const useQuantumStore = defineStore('quantum', () => {
       
       qubit0.value = { x: 0, y: 0, z: 1, purity: 1 }
       qubit1.value = { x: 0, y: 0, z: 1, purity: 1 }
-      qubit2.value = { x: 0, y: 0, z: 1, purity: 1 }
-      qubit3.value = { x: 0, y: 0, z: 1, purity: 1 }
       
-      diracNotation.value = '|0000⟩'
+      diracNotation.value = '|00⟩'
     } catch (error) {
       console.error("Error al reiniciar:", error)
     }
@@ -117,11 +111,9 @@ export const useQuantumStore = defineStore('quantum', () => {
         state.prob = data.probabilidades[state.label] ?? 0
       }
       
-      // Actualizamos las esferas de Bloch de todos
+      // Actualizamos las esferas de Bloch
       qubit0.value = data.bloch.q0
       qubit1.value = data.bloch.q1
-      qubit2.value = data.bloch.q2
-      qubit3.value = data.bloch.q3
       
       diracNotation.value = data.dirac
       
@@ -131,7 +123,7 @@ export const useQuantumStore = defineStore('quantum', () => {
   }
 
   return { 
-    probabilities, qubit0, qubit1, qubit2, qubit3, gateHistory, isMeasured,
+    probabilities, qubit0, qubit1, gateHistory, isMeasured,
     applyGate, resetQubit, measureSystem, diracNotation
   }
 })
